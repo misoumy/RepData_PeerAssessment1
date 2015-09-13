@@ -18,11 +18,16 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 zipfile <- "activity.zip"
 csvfile <- "activity.csv"
 
+count   <- length(dir(pattern = paste(zipfile, csvfile, sep = "|")))
+if (count == 0) {
+    stop("Unable to find the data files, please check your working directory.")
+}
+
 if (!file.exists(csvfile)) {
     unzip(zipfile)
 }
 
-dt <- fread(csvfile, na.strings = "NA")
+dt      <- fread(csvfile, na.strings = "NA")
 ```
 
 2. Process/transform the data into a format suitable for analysis
@@ -38,7 +43,7 @@ setkey(dt, date)
 1. Calculate the total number of steps taken per day
 
 ```r
-dt2 <- dt[,sum(steps, na.rm=TRUE),by=date]
+dt2 <- dt[!is.na(steps),sum(steps),by=date]
 setnames(dt2, "V1", "steps")
 ```
 
@@ -53,19 +58,19 @@ ggplot(dt2, aes(x=steps)) + geom_histogram(binwidth=max(dt2$steps)/20) + theme_c
 3. Calculate and report the mean and median of the total number of steps taken per day
 
 ```r
-mean(dt2$steps, na.rm=TRUE)
+mean(dt2$steps)
 ```
 
 ```
-## [1] 9354.23
+## [1] 10766.19
 ```
 
 ```r
-median(dt2$steps, na.rm=TRUE)
+median(dt2$steps)
 ```
 
 ```
-## [1] 10395
+## [1] 10765
 ```
 
 ## What is the average daily activity pattern?
@@ -109,16 +114,14 @@ sum(is.na(dt$steps))
 2. I'll be using the median of 5-minute interval across all the days as a strategy for filling in all of the missing values in the dataset. 
 
 ```r
-dt4 <- copy(dt)
-dt4[,median:=median(steps, na.rm=TRUE),by=interval]
-# Different approach
-#joined <- dt[dt4[,.(interval,median)]]
+temp <- dt[,median(steps, na.rm=TRUE),by=interval]
 ```
 
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
 ```r
-dt4[is.na(steps),steps:=median]
+dt4 <- copy(dt)
+dt4[is.na(steps),steps:=temp$V1]
 ```
 
 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.
@@ -131,7 +134,7 @@ ggplot(dt5, aes(x=steps)) + geom_histogram(binwidth=max(dt5$steps)/20) + theme_c
 
 ![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
 
-The total number of steps taken each and the mean total number of steps taken per day are different from the first part of the assignment. However the strategy for filling in all of the missing values chosen for this assignment caused no change in median.
+The total number of steps taken each day and the mean total number of steps taken per day are different from the first part of the assignment. The strategy for filling in all of the missing values chosen for this assignment caused change in median too.
 
 ```r
 mean(dt5$steps)
@@ -165,7 +168,7 @@ dt6[,day:=factor(dt6$day > 5, levels=c(TRUE, FALSE), labels=c("weekend", "weekda
 dt7 <- dt6[,mean(steps, na.rm=TRUE),by=.(interval, day)]
 dt7[,time:=as.POSIXct(interval, origin="1970-01-01")]
 setnames(dt7, "V1", "average")
-ggplot(dt7, aes(x=time, y=average)) + geom_line() + theme_classic() + facet_grid(day ~ .) +
+ggplot(dt7, aes(x=time, y=average)) + geom_line() + theme_classic() + facet_wrap(~ day, ncol=1) +
     scale_x_datetime(expand=c(0,0), labels=date_format("%H:%M"), breaks=date_breaks("2 hour")) +
     labs(x="Hour of day", y="Average number of steps")
 ```
