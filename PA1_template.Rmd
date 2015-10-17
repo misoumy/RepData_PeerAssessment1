@@ -11,15 +11,15 @@ output:
 The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
 
 ```{r, echo=FALSE, echo=FALSE}
-if (!require(data.table)) {
+if (!suppressPackageStartupMessages(require(data.table))) {
     stop("Unable to load the data.table package")
 }
 
-if (!require(ggplot2)) {
+if (!suppressPackageStartupMessages(require(ggplot2))) {
     stop("Unable to load the ggplot2 package")
 }
 
-if (!require(scales)) {
+if (!suppressPackageStartupMessages(require(scales))) {
     stop("Unable to load the scales package")
 }
 ```

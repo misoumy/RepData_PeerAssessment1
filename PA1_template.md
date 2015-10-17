@@ -6,11 +6,6 @@
 The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
 
 
-```
-## Loading required package: data.table
-## Loading required package: ggplot2
-## Loading required package: scales
-```
 
 1. Load the data
 
